@@ -1,5 +1,6 @@
+
 const express = require('express');
-const pool = require('../db/postgres');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const router = express.Router();
@@ -7,16 +8,13 @@ const router = express.Router();
 // Get User Profile
 router.get('/profile', auth, async (req, res) => {
     try {
-        const result = await pool.query(
-            'SELECT id, username, full_name, bio, avatar_url, created_at FROM users WHERE id = $1',
-            [req.user.id]
-        );
+        const user = await User.findById(req.user.id).select('-password');
 
-        if (result.rows.length === 0) {
+        if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json(result.rows[0]);
+        res.json(user);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
@@ -36,17 +34,22 @@ router.put('/profile', auth, upload.single('avatar'), async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            `UPDATE users 
-       SET full_name = COALESCE($1, full_name), 
-           bio = COALESCE($2, bio), 
-           avatar_url = COALESCE($3, avatar_url)
-       WHERE id = $4 
-       RETURNING id, username, full_name, bio, avatar_url`,
-            [full_name, bio, avatar_url, req.user.id]
-        );
+        const updateData = {};
+        if (full_name !== undefined) updateData.full_name = full_name;
+        if (bio !== undefined) updateData.bio = bio;
+        if (avatar_url !== undefined) updateData.avatar_url = avatar_url;
 
-        res.json(result.rows[0]);
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: updateData },
+            { new: true }
+        ).select('-password');
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(user);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

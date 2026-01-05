@@ -9,10 +9,11 @@ import {
     ChevronLeft,
     ChevronRight,
     TrendingUp,
-    Settings
+    Settings,
+    Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
@@ -21,7 +22,7 @@ export default function Sidebar() {
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-        { icon: TrendingUp, label: 'Analytics', path: '/analytics' }, // Future Route
+        { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
         { icon: Trophy, label: 'Leaderboard', path: '/leaderboard' },
         { icon: BookOpen, label: 'Resources', path: '/resources' },
         { icon: Settings, label: 'Settings', path: '/settings' },
@@ -29,56 +30,88 @@ export default function Sidebar() {
 
     return (
         <motion.div
-            animate={{ width: collapsed ? 80 : 250 }}
-            className="h-screen sticky top-0 glass border-r border-white/10 flex flex-col justify-between hidden md:flex"
+            animate={{ width: collapsed ? 84 : 260 }}
+            className="h-screen sticky top-0 glass border-r border-white/10 flex flex-col justify-between hidden md:flex z-50 transition-all duration-500 ease-in-out"
         >
-            {/* Header */}
-            <div className="p-6 flex items-center justify-between">
-                {!collapsed && (
-                    <motion.h1
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500"
+            {/* Header / Logo */}
+            <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                    <AnimatePresence mode="wait">
+                        {!collapsed && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                className="flex items-center gap-2"
+                            >
+                                <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                                    <Sparkles size={18} className="text-blue-400" />
+                                </div>
+                                <h1 className="text-xl font-bold tracking-tight text-white">
+                                    NEXUS<span className="text-blue-500">.</span>
+                                </h1>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    <motion.button
+                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setCollapsed(!collapsed)}
+                        className="p-2 rounded-xl text-slate-400 hover:text-white transition-colors"
                     >
-                        Tracker
-                    </motion.h1>
-                )}
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white transition"
-                >
-                    {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-                </button>
+                        {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                    </motion.button>
+                </div>
+
+                {/* Nav Items */}
+                <nav className="space-y-2">
+                    {menuItems.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                `group flex items-center gap-4 p-3.5 rounded-2xl transition-all duration-300 relative overflow-hidden ${isActive
+                                    ? 'text-blue-400 bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]'
+                                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
+                                }`
+                            }
+                        >
+                            <div className="relative z-10">
+                                <item.icon size={22} className="transition-transform group-hover:scale-110" />
+                            </div>
+
+                            <AnimatePresence>
+                                {!collapsed && (
+                                    <motion.span
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="font-semibold tracking-wide relative z-10"
+                                    >
+                                        {item.label}
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Active Indicator Bar */}
+                            <NavLink to={item.path} className={({ isActive }) =>
+                                isActive ? "absolute left-0 top-1/4 bottom-1/4 w-1 bg-blue-500 rounded-r-full shadow-[0_0_10px_#3b82f6]" : "hidden"
+                            } />
+                        </NavLink>
+                    ))}
+                </nav>
             </div>
 
-            {/* Nav Items */}
-            <nav className="flex-1 px-4 space-y-2">
-                {menuItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            `flex items - center gap - 3 p - 3 rounded - lg transition - all duration - 300 ${isActive
-                                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
-                                : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
-                            } `
-                        }
-                    >
-                        <item.icon size={20} />
-                        {!collapsed && <span className="font-medium">{item.label}</span>}
-                    </NavLink>
-                ))}
-            </nav>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-white/10">
-                <button
+            {/* Logout Footer */}
+            <div className="p-6 border-t border-white/5">
+                <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => { logout(); navigate('/login'); }}
-                    className="flex items-center gap-3 p-3 w-full rounded-lg text-red-400 hover:bg-red-500/10 transition"
+                    className="flex items-center gap-4 p-3.5 w-full rounded-2xl text-red-500 hover:bg-red-500/10 transition-colors group"
                 >
-                    <LogOut size={20} />
-                    {!collapsed && <span>Logout</span>}
-                </button>
+                    <LogOut size={22} className="group-hover:-translate-x-1 transition-transform" />
+                    {!collapsed && <span className="font-bold tracking-wide">Logout</span>}
+                </motion.button>
             </div>
         </motion.div>
     );

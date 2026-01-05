@@ -1,10 +1,10 @@
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
 const { connectMongo } = require('./db/mongo');
-const redis = require('./db/redis'); // Initializes Redis connection
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,7 +12,28 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectMongo();
 
-app.use(cors());
+
+const allowedOrigins = [
+  'http://localhost:5173', // Vite local development
+  'https://learning-progress-tracker-frontend.vercel.app', // Example Vercel URL - user should update this
+  process.env.FRONTEND_URL, // Dynamic from env
+].filter(Boolean);
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+}));
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Serve uploaded files
@@ -20,7 +41,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Serv
 
 const authRoutes = require('./routes/auth.routes');
 const goalRoutes = require('./routes/goals.routes');
-const logRoutes = require('./routes/logs.routes');
+const logRoutes = require('./routes/logs.routes.js');
 const analyticsRoutes = require('./routes/analytics.routes');
 const userRoutes = require('./routes/user.routes');
 
@@ -34,6 +55,17 @@ app.get('/', (req, res) => {
   res.send('Learning Progress Tracker API is running');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} `);
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n❌ Error: Port ${PORT} is already in use.`);
+    console.error(`💡 Tip: This usually means the server is already running in another terminal.`);
+    console.error(`   Please close the other terminal or kill the ghost process and try again.\n`);
+    process.exit(1);
+  } else {
+    console.error('SERVER ERROR:', err);
+  }
 });

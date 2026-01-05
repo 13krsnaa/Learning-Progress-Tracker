@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const Log = require('../models/Log');
@@ -38,7 +39,7 @@ router.post('/', auth, async (req, res) => {
             });
             await log.save();
 
-            // Update Streak Logic
+            // Update Streak Logic (Uses MongoDB User document now)
             await streakService.updateStreak(req.user.id, date);
         }
 
