@@ -2,12 +2,6 @@
 
 A comprehensive, full-stack solution to track your learning journey, visualize progress, and stay motivated. Built with the MERN stack and modern DevOps practices.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-> **📘 NEW TO THE PROJECT?** Start with [GETTING_STARTED.md](./docs/GETTING_STARTED.md) (Coming Soon)
-> 
-> **🔄 WANT TO CONTRIBUTING?** Read [CONTRIBUTING.md](./docs/CONTRIBUTING.md)
-
 ---
 
 ## 📖 Table of Contents
@@ -237,7 +231,7 @@ SOFTWARE.
 
 ## 👥 Contributors
 
-- **Developer**: [Your Name/Handle]
+- **Developer**: Keshav Saxena
 
 ---
 
