@@ -254,3 +254,38 @@ SOFTWARE.
 
 **3. CORS Issues**
 - Ensure `cors` middleware is enabled in `server/src/index.js` and allows the client origin.
+
+---
+
+## 🌍 Deployment Guide
+
+This project is set up for a split deployment strategy:
+- **Frontend** -> **Vercel**
+- **Backend** -> **Render / Railway** (Necessary because Vercel Serverless environment does not support persistent local file uploads).
+
+### 1. Backend Deployment (Render/Railway)
+
+1. **Push code to GitHub**.
+2. **Create New Web Service** on Render/Railway.
+3. **Connect your repository**.
+4. **Root Directory**: `server`
+5. **Build Command**: `npm install`
+6. **Start Command**: `node src/index.js`
+7. **Environment Variables**:
+   - `MONGO_URI`: Your MongoDB Atlas Connection String
+   - `JWT_SECRET`: Your production secret
+   - `REDIS_URL`: Your Redis URL (or remove Redis code if not using)
+   - `EMAIL_USER` / `EMAIL_PASS`: For emails
+
+> **⚠️ IMPORTANT**: This backend uses **local file storage** (`/uploads`). Render/Railway Free tiers (and Vercel) have ephemeral file systems, meaning **uploaded images will disappear on restart**.
+> **Recommended Fix**: Update `server/src/middleware/upload.js` to use **Cloudinary** for production.
+
+### 2. Frontend Deployment (Vercel)
+
+1. **Dashboard**: Go to Vercel Dashboard -> Add New Project.
+2. **Import Repository**.
+3. **Root Directory**: Select `client` (Click 'Edit' next to Root Directory).
+4. **Environment Variables**:
+   - `VITE_API_URL`: The URL of your deployed Backend (e.g., `https://learning-tracker-api.onrender.com`)
+5. **Deploy**: Click Deploy.
+
