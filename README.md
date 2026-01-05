@@ -25,15 +25,15 @@ A comprehensive, full-stack solution to track your learning journey, visualize p
 
 ```mermaid
 graph TD
-    Client[Client (React + Vite)]
-    Gateway[API Gateway / Server (Express)]
-    Auth[Auth Controller]
-    Goals[Goals Controller]
-    Logs[Logs Controller]
-    DB[(MongoDB)]
-    Cache[(Redis)]
+    Client["Client (React + Vite)"]
+    Gateway["API Gateway / Server (Express)"]
+    Auth["Auth Controller"]
+    Goals["Goals Controller"]
+    Logs["Logs Controller"]
+    DB[("MongoDB")]
+    Cache[("Redis")]
 
-    Client -->|HTTP/REST| Gateway
+    Client -->|"HTTP/REST"| Gateway
     Gateway --> Auth
     Gateway --> Goals
     Gateway --> Logs
@@ -42,8 +42,8 @@ graph TD
     Goals --> DB
     Logs --> DB
     
-    Goals -->|Cache| Cache
-    Logs -->|Cache| Cache
+    Goals -->|"Cache"| Cache
+    Logs -->|"Cache"| Cache
 ```
 
 **Architecture Overview:**
