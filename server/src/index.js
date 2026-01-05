@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 const path = require('path');
 const { connectMongo } = require('./db/mongo');
 const redis = require('./db/redis'); // Initializes Redis connection
@@ -12,6 +13,7 @@ const PORT = process.env.PORT || 5000;
 connectMongo();
 
 app.use(cors());
+app.use(morgan('dev'));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Serve uploaded files
 

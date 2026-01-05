@@ -15,8 +15,10 @@ router.post('/signup', async (req, res) => {
         // (OTP verification removed)
 
         // Check if user exists (Username or Email)
+        console.log(`Attempting signup for: ${username} (${email})`);
         const userCheck = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
         if (userCheck.rows.length > 0) {
+            console.log('Signup failed: Username or Email already exists');
             return res.status(400).json({ error: 'Username or Email already exists' });
         }
 
@@ -32,9 +34,11 @@ router.post('/signup', async (req, res) => {
 
         const token = jwt.sign({ id: newUser.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+        console.log(`Signup successful for: ${username}`);
         res.json({ token, user: newUser.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Signup error:', err);
+        res.status(500).json({ error: 'Internal Server Error', details: err.message });
     }
 });
 
@@ -59,7 +63,8 @@ router.post('/login', async (req, res) => {
 
         res.json({ token, user: { id: user.rows[0].id, username: user.rows[0].username, email: user.rows[0].email } });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Internal Server Error', details: err.message });
     }
 });
 

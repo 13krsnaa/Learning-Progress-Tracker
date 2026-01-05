@@ -7,6 +7,9 @@ const pool = new Pool(
             ssl: {
                 rejectUnauthorized: false,
             },
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
         }
         : {
             user: process.env.PG_USER || 'postgres',
@@ -14,6 +17,9 @@ const pool = new Pool(
             database: process.env.PG_DATABASE || 'learning_tracker',
             password: process.env.PG_PASSWORD || 'password',
             port: process.env.PG_PORT || 5432,
+            max: 20,
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 2000,
         }
 );
 
