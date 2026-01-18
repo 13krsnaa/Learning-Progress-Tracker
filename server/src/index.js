@@ -14,9 +14,11 @@ connectMongo();
 
 
 const allowedOrigins = [
-  'http://localhost:5173', // Vite local development
-  'https://learning-progress-tracker-frontend.vercel.app', // Example Vercel URL - user should update this
-  process.env.FRONTEND_URL, // Dynamic from env
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:3000',
+  'https://learning-progress-tracker-frontend.vercel.app',
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
