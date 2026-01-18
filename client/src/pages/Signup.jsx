@@ -18,7 +18,7 @@ export default function Signup() {
     const [error, setError] = useState('');
     const [showDebug, setShowDebug] = useState(false);
 
-    const { login } = useAuth();
+    const { setAuthData } = useAuth();
     const navigate = useNavigate();
 
     const handleSignup = async (e) => {
@@ -34,7 +34,7 @@ export default function Signup() {
         setLoading(true);
         try {
             const res = await api.post('/auth/signup', { username, email, password });
-            login(res.data.token, res.data.user);
+            setAuthData(res.data.token, res.data.user);
             navigate('/');
         } catch (err) {
             const isNetworkError = !err.response;
