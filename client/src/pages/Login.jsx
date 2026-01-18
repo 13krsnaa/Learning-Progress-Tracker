@@ -1,184 +1,217 @@
 
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogIn, User, Lock, ArrowRight, Shield, Sparkles } from 'lucide-react';
-import Captcha from '../components/Captcha';
-import PageTransition from '../components/PageTransition';
-import api from '../api';
+import { LogIn, User, Lock, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import GlassCard from '../components/GlassCard';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
-    const { login } = useAuth();
+    const { actions } = useAppContext();
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [showDebug, setShowDebug] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setShowDebug(false);
-
-        if (!isCaptchaVerified) {
-            setError('Please verify you are human.');
-            return;
-        }
         setLoading(true);
-        try {
-            await login(username, password);
-            navigate('/');
-        } catch (err) {
-            const isNetworkError = !err.response;
-            const msg = isNetworkError
-                ? 'Login failed. Please check your connection.'
-                : (err.response?.data?.error || 'Login failed. Please check your credentials.');
 
-            setError(msg);
-            if (isNetworkError) setShowDebug(true);
-            console.error('Login Error:', err.response?.data || err.message);
+        try {
+            // Mock authentication - in production, this would call an API
+            if (username && password) {
+                const mockUser = {
+                    id: Date.now().toString(),
+                    username: username,
+                    email: `${username}@example.com`,
+                    displayName: username.charAt(0).toUpperCase() + username.slice(1),
+                    avatar: null,
+                    joinDate: new Date().toISOString()
+                };
+
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                actions.setUser(mockUser);
+                actions.claimDailyLogin(); // Claim daily login bonus on first login
+                navigate('/');
+            } else {
+                setError('Please enter both username and password');
+            }
+        } catch (err) {
+            setError('Login failed. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <PageTransition>
-            <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#020617] p-4">
-                {/* Dynamic Background Lighting Effects */}
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-blue-900/10 rounded-full blur-[150px]"></div>
-
-                {/* Floating Elements for extra depth */}
+        <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 overflow-hidden">
                 <motion.div
-                    animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-20 right-[15%] text-blue-400/20"
+                    className="absolute w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"
+                    animate={{
+                        x: [0, 100, 0],
+                        y: [0, -100, 0],
+                    }}
+                    transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                    }}
+                    style={{ top: '10%', left: '10%' }}
+                />
+                <motion.div
+                    className="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+                    animate={{
+                        x: [0, -100, 0],
+                        y: [0, 100, 0],
+                    }}
+                    transition={{
+                        duration: 15,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                    }}
+                    style={{ bottom: '10%', right: '10%' }}
+                />
+            </div>
+
+            <div className="relative z-10 w-full max-w-md">
+                {/* Welcome Message */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center mb-8"
                 >
-                    <Sparkles size={120} />
+                    <div className="flex items-center justify-center mb-4">
+                        <BookOpen className="text-white mr-3" size={40} />
+                        <h1 className="text-4xl font-bold text-white">Welcome Back!</h1>
+                    </div>
+                    <p className="text-xl text-white/80">
+                        Ready to continue your learning journey?
+                    </p>
+                    <p className="text-sm text-white/60 mt-2">
+                        Track your progress and achieve your goals
+                    </p>
                 </motion.div>
 
+                {/* Login Form */}
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative z-10 w-full max-w-[450px]"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
                 >
-                    <div className="glass rounded-[2rem] p-8 md:p-10 border border-white/10 shadow-2xl relative overflow-hidden">
-                        {/* Decorative Top Glow */}
-                        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
-
-                        <div className="text-center mb-8">
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: 'spring', damping: 12, delay: 0.2 }}
-                                className="inline-flex p-4 rounded-2xl bg-blue-500/10 text-blue-400 mb-4 border border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.2)]"
-                            >
-                                <Shield size={32} />
-                            </motion.div>
-                            <h2 className="text-4xl font-bold text-white tracking-tight mb-2">Welcome Back</h2>
-                            <p className="text-slate-400 font-medium">Continue your elite journey</p>
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                    animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
-                                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                                    className="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-xl text-sm flex flex-col gap-3 backdrop-blur-sm"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-0.5">⚠️</div>
-                                        <p className="flex-1">{error}</p>
-                                    </div>
-
-                                    {showDebug && (
-                                        <div className="mt-1 p-3 bg-black/40 rounded-lg border border-white/10 text-[10px] font-mono leading-relaxed">
-                                            <p className="text-white mb-1 font-bold">📡 Connection Diagnostic:</p>
-                                            <p className="text-slate-400">Target URL: <span className="text-blue-400 underline">{api.defaults.baseURL}</span></p>
-                                            <p className="text-slate-500 mt-2 italic text-[9px]">Check if the server is running on your PC and if you can reach it via IP.</p>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
+                    <GlassCard className="p-8">
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2 group">
-                                <label className="text-sm font-semibold text-slate-300 ml-1">Identity</label>
+                            {/* Username Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-white/80 mb-2">
+                                    Username
+                                </label>
                                 <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" size={20} />
                                     <input
                                         type="text"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
-                                        placeholder="Username or email"
+                                        className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="Enter your username"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-2 group">
-                                <label className="text-sm font-semibold text-slate-300 ml-1">Passphrase</label>
+                            {/* Password Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-white/80 mb-2">
+                                    Password
+                                </label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50" size={20} />
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium"
-                                        placeholder="••••••••"
+                                        className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                        placeholder="Enter your password"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="py-2">
-                                <Captcha onVerify={setIsCaptchaVerified} />
-                            </div>
+                            {/* Error Message */}
+                            <AnimatePresence>
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-sm"
+                                    >
+                                        {error}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
 
-                            <motion.button
-                                whileHover={{ scale: 1.02, boxShadow: '0 0 25px rgba(59, 130, 246, 0.4)' }}
-                                whileTap={{ scale: 0.98 }}
+                            {/* Submit Button */}
+                            <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-blue-900/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:grayscale"
+                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                             >
                                 {loading ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        Decrypting...
-                                    </div>
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                    >
+                                        <Sparkles size={20} />
+                                    </motion.div>
                                 ) : (
                                     <>
-                                        Authorize Access <ArrowRight size={20} />
+                                        <LogIn size={20} />
+                                        Sign In
                                     </>
                                 )}
-                            </motion.button>
+                            </button>
                         </form>
 
-                        <div className="mt-10 text-center">
-                            <p className="text-slate-500 font-medium">
-                                New operative? <Link to="/signup" className="text-blue-400 hover:text-blue-300 transition-colors font-bold underline underline-offset-4 decoration-blue-500/30">Request Credentials</Link>
+                        {/* Demo Account Info */}
+                        <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
+                            <p className="text-sm text-white/60 text-center">
+                                <span className="font-medium text-white/80">Demo Account:</span> Use any username and password to try the app
                             </p>
                         </div>
-                    </div>
 
-                    {/* Footer Branding */}
-                    <div className="mt-8 flex items-center justify-center gap-2 text-slate-600 text-xs font-bold uppercase tracking-[0.2em]">
-                        <div className="w-8 h-[1px] bg-slate-800"></div>
-                        Learning Progress Tracker v2.0
-                        <div className="w-8 h-[1px] bg-slate-800"></div>
-                    </div>
+                        {/* Motivational Message */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.5 }}
+                            className="mt-6 text-center"
+                        >
+                            <p className="text-sm text-white/60 flex items-center justify-center gap-2">
+                                <Sparkles size={16} className="text-yellow-400" />
+                                Every learning session brings you closer to your goals!
+                            </p>
+                        </motion.div>
+                    </GlassCard>
+                </motion.div>
+
+                {/* Footer */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.8 }}
+                    className="mt-8 text-center"
+                >
+                    <p className="text-sm text-white/40">
+                        Start your journey to better learning today
+                    </p>
                 </motion.div>
             </div>
-        </PageTransition>
+        </div>
     );
 }
